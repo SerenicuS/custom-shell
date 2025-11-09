@@ -12,7 +12,7 @@
 
 <h2 align="left">⚠️ DISCLAIMER</h2>
 
-This project is for EDUCATIONAL PURPOSES ONLY.
+<h3> This project is for EDUCATIONAL PURPOSES ONLY.</h3>
 
     🎓 Created to practice system level concepts.
 
