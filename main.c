@@ -73,6 +73,15 @@ char* pseudo_register(int *keyPtr) { // pass the int keyPressed address so that 
         printf("\n");
         printf("Tell me your name sweetie: ");
         fgets(userName, 10, stdin);
+
+        if (strchr(userName, '\n') == NULL) {
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF) {
+                // This loop discards all the leftover characters
+            }
+        }
+
+
         userName[strcspn(userName, "\n")] = '\0';
 
 
@@ -84,7 +93,7 @@ char* pseudo_register(int *keyPtr) { // pass the int keyPressed address so that 
         else {
 
             if (strcmp(userName, "Harold") != 0) {
-                printf("You are not %s, you are Harold\n", userName);
+                printf("You are not %s, you are Harold.\n", userName);
             }
             else {
                 return userName;
@@ -93,9 +102,6 @@ char* pseudo_register(int *keyPtr) { // pass the int keyPressed address so that 
 
         }
 
-        if (*keyPtr != '\n'){
-            getchar();// To prevent issues in loop where confirming your username is also run when you are only entering your username yet after redoing your name
-        }
     }
 
 }
