@@ -40,7 +40,7 @@ void insert_token(char* line_buffer, char* args[]) {
     char *token = strtok(line_buffer, " \t\r\n");
     int i = 0;
 
-    while (token != NULL) {
+    while (token != NULL && i < 63) {
         args[i] = token;
         i++;
 
