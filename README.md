@@ -2,7 +2,7 @@
 
 ###
 
-<h2 align="left">As a student who wants to learn low to mid-level programming languages, I want to understand how each system feature actually works. Building a terminal seemed like a good way to learn this since it touches so many core concepts.<br><br>But honestly, creating a standard terminal is boring if you just follow the normal conventions. So I made this custom terminal for fun and to practice what I've learned in C.<br><br>I'm hoping to keep improving and get better as a C programmer through projects like this.</h2>
+<h2 align="left">As a student who wants to learn low to mid-level programming languages, I want to understand how each system feature actually works. Building a terminal seemed like a good way to learn this since it touches so many core concepts.<br><br>But honestly, creating a standard terminal might be boring. So I made this custom terminal for fun and to practice what I've learned in C.<br><br>I'm hoping to keep improving and get better as a C programmer through projects like this.</h2>
 
 ###
 
