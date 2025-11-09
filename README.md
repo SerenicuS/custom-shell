@@ -22,6 +22,8 @@
 
     🔞 No actual psychological harm intended.
 
+    🔨 This project is still under development.
+
 
 
 | Standard Command | My Version | Function |
