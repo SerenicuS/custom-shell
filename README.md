@@ -2,13 +2,25 @@
 
 ###
 
-<h2 align="left">As a student who wants to learn low to mid-level programming languages, I want to understand how each system feature actually works. Building a terminal seemed like a good way to learn this since it touches so many core concepts.<br><br>But honestly, creating a standard terminal might be boring. So I made this custom terminal for fun and to practice what I've learned in C.<br><br>I'm hoping to keep improving and get better as a C programmer through projects like this.</h2>
+<h3 align="left">As a student who wants to learn low to mid-level programming languages, I want to understand how each system feature actually works. Building a terminal seemed like a good way to learn this since it touches so many core concepts.<br><br>But honestly, creating a standard terminal might be boring. So I made this custom terminal for fun and to practice what I've learned in C.<br><br>I'm hoping to keep improving and get better as a C programmer through projects like this.</h3>
 
 ###
 
 <p align="left"></p>
 
-###
+<br clear="both">
+
+<h2 align="left">⚠️ DISCLAIMER</h2>
+
+This project is for EDUCATIONAL PURPOSES ONLY.
+
+    🎓 Created to practice system level concepts.
+
+    🚫 Not intended for actual production use.
+
+    🤪 The "dommy mommy" theme is purely satirical and for entertainment.
+
+    🔞 No actual psychological harm intended.
 
 
 
@@ -27,4 +39,6 @@
 | `help` | `tellme` | Show command help |
 | `exit` | `mayileave` | Exit terminal |
 
-*P.S.*: Harold is the only one she knows, so do not make her angry!
+
+
+*P.S.*: Harold is the only one she recognizes, so don't make her angry.
