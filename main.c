@@ -33,7 +33,7 @@
 
 
 void pseudo_start(char *userName);
-char* user_register(int *keyPtr);
+char* user_register();
 
 
 void insert_token(char* line_buffer, char* args[]) {
@@ -59,14 +59,14 @@ int main(void) {
 
     keyPressed = getchar();
     if (keyPressed == 10) {
-        pseudo_start(user_register(&keyPressed));
+        pseudo_start(user_register());
     }
 
     printf("\nExiting.....");
     return 0;
 }
 
-char* user_register(int *keyPtr) { // pass the int keyPressed address so that I don't need to create another one
+char* user_register() { // pass the int keyPressed address so that I don't need to create another one
     static char userName[10]; // Making it static to allow it to stay alive even if the function ends
     printf("Do you know your name?\n");
     while (1) {
