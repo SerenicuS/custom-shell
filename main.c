@@ -4,6 +4,7 @@
 #include <direct.h>
 #include <windows.h>
 #include <shellapi.h>
+#include <time.h>
 
 
 // OK TYPES
@@ -32,7 +33,7 @@
 
 
 
-void shell_start(char *userName);
+void shell_start(char *userName, boolean manipulativeShell);
 char* user_register();
 
 
@@ -55,11 +56,20 @@ int main(void) {
 
     printf("Hello To my Custom Shell!\n");
     printf("It is made by \"HiveMind\" to showcase my talents ^^.\n");
-    printf("Press Enter key to start using it:");
+    printf("Press Y(Manipulation) or Z(Default) key to start using it:");
 
     keyPressed = getchar();
-    if (keyPressed == 10) {
-        shell_start(user_register());
+
+
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) { }
+
+
+    if (keyPressed == 89) {
+        shell_start(user_register(), TRUE);
+    }
+    else if (keyPressed == 90) {
+        shell_start(user_register(), FALSE);
     }
 
     printf("\nExiting.....");
@@ -363,7 +373,7 @@ int read_file(char* args[]) {
 }
 
 
-void get_shell_status(int rc) {
+void get_shell_status(const int rc) {
     switch (rc) {
         case 0:
             printf("It was successful sweetie.\n");
@@ -428,84 +438,138 @@ void get_shell_status(int rc) {
     }
 }
 
+const char* random_user_command() {
+    const char* words[] = {
+        "tellme", "mayileave", "iamhere", "mommy?", "walkwithme",
+        "goback", "canihave", "takethe", "letusplayhouse", "openthis", "readthis"
+    };
+
+    return words[rand() % 11];
+}
+
+void shell_attempt_command(char* args[], int* rc)
+{
+    if (args[0] == NULL) {
+        *rc = 100;
+    }
+    else if (strcmp(args[0], "tellme") == 0) {
+        shell_help();
+    }
+    else if (strcmp(args[0], "mayileave") == 0) {
+        *rc = shell_exit();
+    }
+    else if (strcmp(args[0], "iamhere") == 0) {
+        get_directory();
+    }
+    else if (strcmp(args[0], "mommy?") == 0) {
+        *rc = list_files_in_same_directory();
+    }
+    else if (strcmp(args[0], "walkwithme") == 0) {
+        *rc = move_to_specific_directory(args);
+        if (*rc == SHELL_OK_MOVE_DIRECTORY) {
+            printf("Moved inside: %s\n", args[1]);
+        }
+    }
+    else if (strcmp(args[0], "goback") == 0) {
+       *rc = return_to_prev_directory();
+    }
+    else if (strcmp(args[0], "canihave") == 0) {
+        *rc = create_file(args);
+    }
+    else if (strcmp(args[0], "takethe") == 0) {
+        *rc = delete_file(args);
+    }
+    else if (strcmp(args[0], "letusplayhouse") == 0) {
+        *rc = create_directory(args);
+    }
+    else if (strcmp(args[0], "removethehouse") == 0) {
+        *rc = delete_directory(args);
+    }
+    else if (strcmp(args[0], "openthis") == 0) {
+        *rc = open_file(args);
+    }
+    else if (strcmp(args[0], "readthis") == 0) {
+        *rc = read_file(args);
+    }
+    else {
+        *rc = 100;
+    }
+    get_shell_status(*rc);
+}
 
 
-void shell_start(char *userName) {
+void shell_start_default(char *userName, char *line_buffer, char* args[], int *rc) {
 
-    char line_buffer[1024];
-    char* args[64];
-    printf("Good boy, always listen to your mommy.\n");
-
-
-
-    while (1) { // Start
+    while (1) {
         printf("%s> ", userName);
         fgets(line_buffer, 1024, stdin);
         insert_token(line_buffer, args);
-        int rc = 0;
-
-        if (args[0] == NULL) {
-            rc = 100;
-
-        }
-        else if (strcmp(args[0], "tellme") == 0) {
-            shell_help();
-            continue;
-        }
-        else if (strcmp(args[0], "mayileave") == 0) {
-            rc = shell_exit();
-
-        }
-        else if (strcmp(args[0], "iamhere") == 0) {
-            get_directory();
-            continue;
-
-        }
-        else if (strcmp(args[0], "mommy?") == 0) {
-            rc = list_files_in_same_directory();
-
-        }
-        else if (strcmp(args[0], "walkwithme") == 0) {
-            rc = move_to_specific_directory(args);
-
-            if (rc == SHELL_OK_MOVE_DIRECTORY) {
-                printf("Moved inside: %s\n", args[1]);
-            }
 
 
-        }
-        else if (strcmp(args[0], "goback") == 0) {
-           rc = return_to_prev_directory();
+        shell_attempt_command(args, rc);
+    }
+}
 
-        }
-        else if (strcmp(args[0], "canihave") == 0) {
-            rc = create_file(args);
+void shell_start_chaos(char *userName, char *line_buffer, char* args[], int* rc) {
 
-        }
-        else if (strcmp(args[0], "takethe") == 0) {
-            rc = delete_file(args);
+    boolean didntHear = FALSE;
 
-        }
-        else if (strcmp(args[0], "letusplayhouse") == 0) {
-            rc = create_directory(args);
+   while (1) {
 
-        }
-        else if (strcmp(args[0], "removethehouse") == 0) {
-            rc = delete_directory(args);
+       printf("%s> ", userName);
+       fgets(line_buffer, 1024, stdin);
+       insert_token(line_buffer, args);
 
-        }
-        else if (strcmp(args[0], "openthis") == 0) {
-            rc = open_file(args);
-        }
-        else if (strcmp(args[0], "readthis") == 0) {
-            rc = read_file(args);
-        }
-        else {
-            rc = 100;
 
-        }
+       if (didntHear == 1) {
 
-        get_shell_status(rc);
+           if (rand() % 100 < 50) {
+               printf("Are you talking sweetie? I did not hear you. Can you repeat that again?\n");
+           }
+           else {
+               const char* random_cmd = random_user_command();
+               printf("You already told me to %s, you are so impatient sweetie.\n", random_cmd);
+               _sleep(5);
 
+               char* fake_args[2];
+               fake_args[0] = (char*)random_cmd;
+               fake_args[1] = NULL;
+
+               shell_attempt_command(fake_args, rc);
+
+           }
+           didntHear = FALSE;
+           printf("\n\n");
+           continue;
+       }
+
+       if (rand() % 100 < 20) { // 20% chance for her to not hear you
+           didntHear = TRUE;
+           continue;
+       }
+
+       shell_attempt_command(args, rc);
    }
 }
+
+
+
+void shell_start(char *userName, boolean manipulativeShell) {
+    srand(time(NULL));
+    char line_buffer[1024]; // Buffer
+    char* args[64]; // Args list
+    int rc = 0;
+
+    printf("Good boy, always listen to your mommy.\n");
+
+    if (manipulativeShell) {
+        shell_start_chaos(userName, line_buffer, args, &rc);
+    }
+    else {
+        shell_start_default(userName, line_buffer, args, &rc);
+    }
+
+
+}
+
+
