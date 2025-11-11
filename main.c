@@ -32,7 +32,7 @@
 
 
 
-void pseudo_start(char *userName);
+void shell_start(char *userName);
 char* user_register();
 
 
@@ -59,20 +59,64 @@ int main(void) {
 
     keyPressed = getchar();
     if (keyPressed == 10) {
-        pseudo_start(user_register());
+        shell_start(user_register());
     }
 
     printf("\nExiting.....");
     return 0;
+
 }
 
-char* user_register() { // pass the int keyPressed address so that I don't need to create another one
+void whitespace_remover(char* userName) {
+    int read_index = 0;
+    int write_index = 0;
+
+    while (userName[read_index] != '\0') {
+        if (userName[read_index] != ' ') {
+            userName[write_index] = userName[read_index];
+
+            write_index++;
+        }
+
+        read_index++;
+    }
+
+    userName[write_index] = '\0';
+
+}
+
+
+boolean username_similarities(char* name) {
+    static const char answer[] = "Harold";
+    int sim = 0;
+    for (int i = 0; i < strlen(answer); i++){
+        if (answer[i] == '\0') {
+            break;
+        }
+
+        if (answer[i] == name[i]) {
+            sim++;
+        }
+    }
+
+
+    if (sim >= 3) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+char* user_register() {
     static char userName[10]; // Making it static to allow it to stay alive even if the function ends
+
     printf("Do you know your name?\n");
+    printf("Tell me your name sweetie.. \n");
     while (1) {
         printf("\n");
-        printf("Tell me your name sweetie: ");
+        printf("I am: ");
         fgets(userName, 10, stdin);
+
+
 
         if (strchr(userName, '\n') == NULL) {
             int c;
@@ -84,19 +128,26 @@ char* user_register() { // pass the int keyPressed address so that I don't need 
 
         userName[strcspn(userName, "\n")] = '\0';
 
+        whitespace_remover(userName);
+
 
         unsigned const int length = strlen(userName);
 
         if (length == 0) {
             printf("You won't speak? I am not going to leave yet...\n");
         }
+
         else {
 
-            if (strcmp(userName, "Harold") != 0) {
-                printf("You are not %s, you are Harold.\n", userName);
+            if (strcmp(userName, "Harold") == 0) {
+               return userName;
+            }
+
+            if (username_similarities(userName)) {
+                printf("Hmm, say that again sweetie, you are close.");
             }
             else {
-                return userName;
+                printf("You are not %s, you are Harold.\n", userName);
             }
 
 
@@ -379,7 +430,7 @@ void get_shell_status(int rc) {
 
 
 
-void pseudo_start(char *userName) {
+void shell_start(char *userName) {
 
     char line_buffer[1024];
     char* args[64];
