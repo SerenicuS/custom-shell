@@ -22,7 +22,7 @@
 
     🔞 No actual psychological harm intended.
 
-    🔨 This project is still under development(most features on a standard terminal is still missing).
+    🔨 This project is still under development(most features in a standard shell is still missing).
 
 
 
