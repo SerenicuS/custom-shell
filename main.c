@@ -62,23 +62,70 @@
 
 
 
+// =================================================================
+//  CORE SHELL LOGIC & MAIN LOOPS
+// =================================================================
+// These are the high-level functions that run the shell.
 void shell_start(char *userName, boolean manipulativeShell);
+void shell_start_default(char* userName, char *lineBuffer, char* args[], int * rc);
+void shell_start_chaos(char *userName, char*lineBuffer, char* args[], int* rc);
+
+
+// =================================================================
+//  COMMAND & PROCESS HANDLING
+// =================================================================
+// This is the "brain" that decides what to do with user input.
+void shell_attempt_command(char* args[], int* rc);
+char* shell_launch_translator(char* args[], int* flavorCode);
+int shell_launch_process(char* commandLine);
+
+
+// =================================================================
+//  BUILT-IN COMMANDS
+// =================================================================
+// These are all the custom commands for your shell.
+void shell_help();
+int shell_exit();
+void get_directory();
+int list_files_in_same_directory();
+int move_to_specific_directory(char* args[]);
+int return_to_prev_directory();
+int create_file(char* args[]);
+int delete_file(char* args[]);
+int create_directory(char* args[]);
+int delete_directory(char* args[]);
+int open_file(char* args[]);
+int read_file(char*args[]);
+
+
+// =================================================================
+//  USER REGISTRATION
+// =================================================================
+// Functions related to the "Harold" login.
 char* user_register();
+boolean username_similarities(char* userName);
+
+
+// =================================================================
+//  STATUS & PRESENTATION
+// =================================================================
+// Your "separation of concerns" functions for status and text.
+void get_shell_status(const int rc);
 void shell_flavor_reply(const int flavorCode);
 
-void insert_token(char* line_buffer, char* args[]) {
-    char *token = strtok(line_buffer, " \t\r\n");
-    int i = 0;
 
-    while (token != NULL && i < 63) {
-        args[i] = token;
-        i++;
+// =================================================================
+//  UTILITIES
+// =================================================================
+// These are low-level helper functions used by other parts of the code.
+void insert_token(char* line_buffer, char* args[]);
+void whitespace_remover(char* userName);
+const char* random_user_command();
 
-        token = strtok(NULL, " \t\r\n");
-    }
 
-    args[i] = NULL;
-}
+/*
+ * CORE SHELL LOGIC & MAIN LOOPS
+ */
 
 int main(void) {
     int keyPressed;
@@ -106,96 +153,222 @@ int main(void) {
 
 }
 
-void whitespace_remover(char* userName) {
-    int read_index = 0;
-    int write_index = 0;
+void shell_start(char *userName, boolean manipulativeShell) {
+    srand(time(NULL));
+    char lineBuffer[1024]; // Buffer
+    char* args[64]; // Args list
+    int rc = 0;
 
-    while (userName[read_index] != '\0') {
-        if (userName[read_index] != ' ') {
-            userName[write_index] = userName[read_index];
+    shell_flavor_reply(607);
 
-            write_index++;
-        }
-
-        read_index++;
+    if (manipulativeShell) {
+        shell_start_chaos(userName, lineBuffer, args, &rc);
+    }
+    else {
+        shell_start_default(userName, lineBuffer, args, &rc);
     }
 
-    userName[write_index] = '\0';
 
 }
 
-
-boolean username_similarities(char* name) {
-    static const char answer[] = "Harold";
-    int sim = 0;
-    for (int i = 0; i < strlen(answer); i++){
-        if (answer[i] == '\0') {
-            break;
-        }
-
-        if (answer[i] == name[i]) {
-            sim++;
-        }
-    }
-
-
-    if (sim >= 3) {
-        return TRUE;
-    }
-    return FALSE;
-}
-
-char* user_register() {
-    static char userName[10]; // Making it static to allow it to stay alive even if the function ends
-    shell_flavor_reply(605);
-    shell_flavor_reply(606);
-
+void shell_start_default(char *userName, char *lineBuffer, char* args[], int *rc) {
 
     while (1) {
-        shell_flavor_reply(801);
-        shell_flavor_reply(803);
-        fgets(userName, 10, stdin);
+        printf("%s> ", userName);
+        fgets(lineBuffer, 1024, stdin);
 
 
 
-        if (strchr(userName, '\n') == NULL) {
-            int c;
-            while ((c = getchar()) != '\n' && c != EOF) {
-                // This loop discards all the leftover characters
-            }
-        }
+        insert_token(lineBuffer, args);
+        shell_attempt_command(args, rc);
+    }
+}
 
+void shell_start_chaos(char *userName, char *lineBuffer, char* args[], int* rc) {
 
-        userName[strcspn(userName, "\n")] = '\0';
+    boolean didntHear = FALSE;
 
-        whitespace_remover(userName);
+    while (1) {
 
+        printf("%s> ", userName);
+        fgets(lineBuffer, 1024, stdin);
+        insert_token(lineBuffer, args);
+        if (didntHear == 1) {
 
-        unsigned const int length = strlen(userName);
-
-        if (length == 0) {
-            shell_flavor_reply(501);
-        }
-
-        else {
-
-            if (strcmp(userName, "Harold") == 0) {
-               return userName;
-            }
-
-            if (username_similarities(userName)) {
-                shell_flavor_reply(502);
+            if (rand() % 100 < 50) {
+                shell_flavor_reply(608);
             }
             else {
-                shell_flavor_reply(503);
+                const char* random_cmd = random_user_command();
+                shell_flavor_reply(609);
+                Sleep(5);
+
+                char* fake_args[2];
+                fake_args[0] = (char*)random_cmd;
+                fake_args[1] = NULL;
+
+                shell_attempt_command(fake_args, rc);
+
             }
-
-
+            didntHear = FALSE;
+            shell_flavor_reply(802);
+            continue;
         }
 
+        if (rand() % 100 < 20) { // 20% chance for her to not hear you
+            didntHear = TRUE;
+            continue;
+        }
+
+        shell_attempt_command(args, rc);
+    }
+}
+
+
+/*
+ * COMMAND & PROCESS HANDLING
+ */
+
+void shell_attempt_command(char* args[], int* rc)
+{
+    int flavorCode = FLAVOR_DEFAULT;
+
+    if (args[0] == NULL) {
+        *rc = 70;
+    }
+    else if (strcmp(args[0], "tellme") == 0) {
+        shell_help();
+        *rc = SHELL_OK_GENERAL;
+    }
+    else if (strcmp(args[0], "mayileave") == 0) {
+        *rc = shell_exit();
+    }
+    else if (strcmp(args[0], "iamhere") == 0) {
+        get_directory();
+        *rc = SHELL_OK_GENERAL;
+    }
+    else if (strcmp(args[0], "mommy?") == 0) {
+        *rc = list_files_in_same_directory();
+    }
+    else if (strcmp(args[0], "walkwithme") == 0) {
+        *rc = move_to_specific_directory(args);
+        if (*rc == SHELL_OK_MOVE_DIRECTORY) {
+            printf("Moved inside: %s\n", args[1]);
+        }
+    }
+    else if (strcmp(args[0], "goback") == 0) {
+        *rc = return_to_prev_directory();
+    }
+    else if (strcmp(args[0], "canihave") == 0) {
+        *rc = create_file(args);
+    }
+    else if (strcmp(args[0], "takethe") == 0) {
+        *rc = delete_file(args);
+    }
+    else if (strcmp(args[0], "letusplayhouse") == 0) {
+        *rc = create_directory(args);
+    }
+    else if (strcmp(args[0], "removethehouse") == 0) {
+        *rc = delete_directory(args);
+    }
+    else if (strcmp(args[0], "openthis") == 0) {
+        *rc = open_file(args);
+    }
+    else if (strcmp(args[0], "readthis") == 0) {
+        *rc = read_file(args);
+    }
+    else {
+        char* commandToRun = shell_launch_translator(args, &flavorCode);
+
+        shell_flavor_reply(flavorCode);
+
+        if (commandToRun == NULL) {
+            *rc = SHELL_ERROR_INCOMPLETE_LAUNCH_PROCESS;
+        }
+        else {
+            *rc = shell_launch_process(commandToRun);
+        }
+    }
+    get_shell_status(*rc);
+}
+
+char* shell_launch_translator(char* args[], int* flavorCode){
+    static char commandLine[1024];
+    *flavorCode = FLAVOR_DEFAULT;
+
+
+    if (strcmp(args[0], "doxxme") == 0) {
+        args[0] = "ipconfig";
+        *flavorCode = FLAVOR_IPCONFIG_ATTEMPT;
+
+    }
+    else if (strcmp(args[0], "callmeplease") == 0) {
+        if (args[1] == NULL) {
+            return NULL;
+        }
+        args[0] = "ping";
+        *flavorCode = FLAVOR_PING_ATTEMPT;
+    }
+    else {
+        return NULL;
     }
 
+
+
+    commandLine[0] = '\0';
+    strcpy(commandLine, args[0]);
+
+    for (int i = 1; args[i] != NULL; i++) {
+        strcat(commandLine, " ");
+        strcat(commandLine, args[i]);
+    }
+
+    return commandLine;
+
 }
+
+int shell_launch_process(char* commandLine) {
+
+    if (commandLine == NULL) {
+        return SHELL_ERROR_INCOMPLETE_LAUNCH_PROCESS;
+    }
+
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+
+    char mutable_command_line[1024];
+    strcpy(mutable_command_line, commandLine);
+
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+
+    if (!CreateProcess(
+         NULL,                   // Use command line
+         mutable_command_line,   // The full command line
+         NULL,                   // Process handle not inheritable
+         NULL,                   // Thread handle not inheritable
+         FALSE,                  // Set handle inheritance to FALSE
+         0,                      // No creation flags
+         NULL,                   // Use parent's environment block
+         NULL,                   // Use parent's starting directory
+         &si,                    // Pointer to STARTUPINFO
+         &pi                     // Pointer to PROCESS_INFORMATION
+    )) {
+        return SHELL_ERROR_PROCESS_DOES_NOT_EXIST;
+    }
+
+    WaitForSingleObject(pi.hProcess, INFINITE);
+
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+
+    return SHELL_OK_LAUNCH_PROCESS;
+}
+
+/*
+ * BUILT-IN COMMANDS
+ */
 
 void shell_help() {
     printf( "You are too greedy.\n"
@@ -216,7 +389,6 @@ void shell_help() {
            "---------------\n"
            );
 }
-
 
 int shell_exit() {
     return SHELL_OK_TERMINATE;
@@ -404,7 +576,84 @@ int read_file(char* args[]) {
 }
 
 /*
- * This is the function that has the Error handling using #define
+ * USER REGISTRATION
+ */
+
+char* user_register() {
+    static char userName[10]; // Making it static to allow it to stay alive even if the function ends
+    shell_flavor_reply(605);
+    shell_flavor_reply(606);
+
+
+    while (1) {
+        shell_flavor_reply(801);
+        shell_flavor_reply(803);
+        fgets(userName, 10, stdin);
+
+
+
+        if (strchr(userName, '\n') == NULL) {
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF) {
+                // This loop discards all the leftover characters
+            }
+        }
+
+
+        userName[strcspn(userName, "\n")] = '\0';
+
+        whitespace_remover(userName);
+
+
+        unsigned const int length = strlen(userName);
+
+        if (length == 0) {
+            shell_flavor_reply(501);
+        }
+
+        else {
+
+            if (strcmp(userName, "Harold") == 0) {
+                return userName;
+            }
+
+            if (username_similarities(userName)) {
+                shell_flavor_reply(502);
+            }
+            else {
+                shell_flavor_reply(503);
+            }
+
+
+        }
+
+    }
+
+}
+
+boolean username_similarities(char* userName) {
+    static const char answer[] = "Harold";
+    int sim = 0;
+    for (int i = 0; i < strlen(answer); i++){
+        if (answer[i] == '\0') {
+            break;
+        }
+
+        if (answer[i] == userName[i]) {
+            sim++;
+        }
+    }
+
+
+    if (sim >= 3) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+
+/*
+ * STATUS & PRESENTATION
  */
 
 void get_shell_status(const int rc) {
@@ -481,58 +730,6 @@ void get_shell_status(const int rc) {
     }
 }
 
-const char* random_user_command() {
-    const char* words[] = {
-        "tellme", "mayileave", "iamhere", "mommy?", "walkwithme",
-        "goback", "canihave", "takethe", "letusplayhouse", "openthis", "readthis", "runthisforme", "doxxme"
-    };
-
-    return words[rand() % 11];
-}
-
-
-int shell_launch_process(char* commandLine) {
-
-    if (commandLine == NULL) {
-        return SHELL_ERROR_INCOMPLETE_LAUNCH_PROCESS;
-    }
-
-    STARTUPINFO si;
-    PROCESS_INFORMATION pi;
-
-    char mutable_command_line[1024];
-    strcpy(mutable_command_line, commandLine);
-
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    ZeroMemory(&pi, sizeof(pi));
-
-    if (!CreateProcess(
-         NULL,                   // Use command line
-         mutable_command_line,   // The full command line
-         NULL,                   // Process handle not inheritable
-         NULL,                   // Thread handle not inheritable
-         FALSE,                  // Set handle inheritance to FALSE
-         0,                      // No creation flags
-         NULL,                   // Use parent's environment block
-         NULL,                   // Use parent's starting directory
-         &si,                    // Pointer to STARTUPINFO
-         &pi                     // Pointer to PROCESS_INFORMATION
-    )) {
-        return SHELL_ERROR_PROCESS_DOES_NOT_EXIST;
-    }
-
-    WaitForSingleObject(pi.hProcess, INFINITE);
-
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
-
-    return SHELL_OK_LAUNCH_PROCESS;
-}
-
-/*
- * This is not error handling cases like the get_shell_status considering they are just to call flavor texts for the theme
- */
 void shell_flavor_reply(const int flavorCode) {
     switch (flavorCode) {
 
@@ -592,183 +789,48 @@ void shell_flavor_reply(const int flavorCode) {
     }
 }
 
-
 /*
-* LEGIT WINDOWS COMMANDS HERE to be translated to work
-* Why this is needed?: To ensure the terminal will stay consistent in interacting with the user if they use processess
-*/
+ * UTILITIES
+ */
 
-char* shell_launch_translator(char* args[], int* flavorCode){
-    static char commandLine[1024];
-    *flavorCode = FLAVOR_DEFAULT;
+void insert_token(char* line_buffer, char* args[]) {
+    char *token = strtok(line_buffer, " \t\r\n");
+    int i = 0;
 
+    while (token != NULL && i < 63) {
+        args[i] = token;
+        i++;
 
-    if (strcmp(args[0], "doxxme") == 0) {
-        args[0] = "ipconfig";
-        *flavorCode = FLAVOR_IPCONFIG_ATTEMPT;
-
+        token = strtok(NULL, " \t\r\n");
     }
-    else if (strcmp(args[0], "callmeplease") == 0) {
-        if (args[1] == NULL) {
-            return NULL;
+
+    args[i] = NULL;
+}
+
+
+void whitespace_remover(char* userName) {
+    int read_index = 0;
+    int write_index = 0;
+
+    while (userName[read_index] != '\0') {
+        if (userName[read_index] != ' ') {
+            userName[write_index] = userName[read_index];
+
+            write_index++;
         }
-        args[0] = "ping";
-        *flavorCode = FLAVOR_PING_ATTEMPT;
-    }
-    else {
-        return NULL;
+
+        read_index++;
     }
 
-
-
-    commandLine[0] = '\0';
-    strcpy(commandLine, args[0]);
-
-    for (int i = 1; args[i] != NULL; i++) {
-        strcat(commandLine, " ");
-        strcat(commandLine, args[i]);
-    }
-
-    return commandLine;
+    userName[write_index] = '\0';
 
 }
 
+const char* random_user_command() {
+    const char* words[] = {
+        "tellme", "mayileave", "iamhere", "mommy?", "walkwithme",
+        "goback", "canihave", "takethe", "letusplayhouse", "openthis", "readthis", "runthisforme", "doxxme"
+    };
 
-void shell_attempt_command(char* args[], int* rc)
-{
-    int flavorCode = FLAVOR_DEFAULT;
-
-    if (args[0] == NULL) {
-        *rc = 70;
-    }
-    else if (strcmp(args[0], "tellme") == 0) {
-        shell_help();
-        *rc = SHELL_OK_GENERAL;
-    }
-    else if (strcmp(args[0], "mayileave") == 0) {
-        *rc = shell_exit();
-    }
-    else if (strcmp(args[0], "iamhere") == 0) {
-        get_directory();
-        *rc = SHELL_OK_GENERAL;
-    }
-    else if (strcmp(args[0], "mommy?") == 0) {
-        *rc = list_files_in_same_directory();
-    }
-    else if (strcmp(args[0], "walkwithme") == 0) {
-        *rc = move_to_specific_directory(args);
-        if (*rc == SHELL_OK_MOVE_DIRECTORY) {
-            printf("Moved inside: %s\n", args[1]);
-        }
-    }
-    else if (strcmp(args[0], "goback") == 0) {
-       *rc = return_to_prev_directory();
-    }
-    else if (strcmp(args[0], "canihave") == 0) {
-        *rc = create_file(args);
-    }
-    else if (strcmp(args[0], "takethe") == 0) {
-        *rc = delete_file(args);
-    }
-    else if (strcmp(args[0], "letusplayhouse") == 0) {
-        *rc = create_directory(args);
-    }
-    else if (strcmp(args[0], "removethehouse") == 0) {
-        *rc = delete_directory(args);
-    }
-    else if (strcmp(args[0], "openthis") == 0) {
-        *rc = open_file(args);
-    }
-    else if (strcmp(args[0], "readthis") == 0) {
-        *rc = read_file(args);
-    }
-    else {
-        char* commandToRun = shell_launch_translator(args, &flavorCode);
-
-        shell_flavor_reply(flavorCode);
-
-        if (commandToRun == NULL) {
-            *rc = SHELL_ERROR_INCOMPLETE_LAUNCH_PROCESS;
-        }
-        else {
-            *rc = shell_launch_process(commandToRun);
-        }
-    }
-    get_shell_status(*rc);
+    return words[rand() % 11];
 }
-
-
-void shell_start_default(char *userName, char *lineBuffer, char* args[], int *rc) {
-
-    while (1) {
-        printf("%s> ", userName);
-        fgets(lineBuffer, 1024, stdin);
-
-
-
-        insert_token(lineBuffer, args);
-        shell_attempt_command(args, rc);
-    }
-}
-
-void shell_start_chaos(char *userName, char *lineBuffer, char* args[], int* rc) {
-
-    boolean didntHear = FALSE;
-
-   while (1) {
-
-       printf("%s> ", userName);
-       fgets(lineBuffer, 1024, stdin);
-       insert_token(lineBuffer, args);
-       if (didntHear == 1) {
-
-           if (rand() % 100 < 50) {
-               shell_flavor_reply(608);
-           }
-           else {
-               const char* random_cmd = random_user_command();
-               shell_flavor_reply(609);
-               Sleep(5);
-
-               char* fake_args[2];
-               fake_args[0] = (char*)random_cmd;
-               fake_args[1] = NULL;
-
-               shell_attempt_command(fake_args, rc);
-
-           }
-           didntHear = FALSE;
-           shell_flavor_reply(802);
-           continue;
-       }
-
-       if (rand() % 100 < 20) { // 20% chance for her to not hear you
-           didntHear = TRUE;
-           continue;
-       }
-
-       shell_attempt_command(args, rc);
-   }
-}
-
-
-
-void shell_start(char *userName, boolean manipulativeShell) {
-    srand(time(NULL));
-    char lineBuffer[1024]; // Buffer
-    char* args[64]; // Args list
-    int rc = 0;
-
-    shell_flavor_reply(607);
-
-    if (manipulativeShell) {
-        shell_start_chaos(userName, lineBuffer, args, &rc);
-    }
-    else {
-        shell_start_default(userName, lineBuffer, args, &rc);
-    }
-
-
-}
-
-
