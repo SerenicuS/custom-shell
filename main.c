@@ -382,10 +382,11 @@ void shell_help() {
            " 7. canihave <filename>            ->   Create File\n"
            " 8. takethe <filename>             ->   Delete File\n"
            " 9. letusplayhouse <directoryname> ->   Create a Directory\n"
-           "10. openthis <filename>            ->   Open the File\n"
-           "11. readthis <filename>            ->   Read the File's contents\n"
-           "12. doxxme                         ->   Windows Ip Configuration\n"
-           "13. callmeplease <ip/dns>          ->   Ping device\n"
+           "10. removethehouse <directoryname> ->   Delete a Directory\n"
+           "11. openthis <filename>            ->   Open the File\n"
+           "12. readthis <filename>            ->   Read the File's contents\n"
+           "13. doxxme                         ->   Windows Ip Configuration\n"
+           "14. callmeplease <ip/dns>          ->   Ping device\n"
            "---------------\n"
            );
 }
