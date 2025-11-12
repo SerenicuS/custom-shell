@@ -39,7 +39,8 @@
 | `del <file>` | `takethe <file>` | Delete file |
 | `cd ..` | `goback` | Go to parent directory |
 | `help` | `tellme` | Show command help |
-| `exit` | `mayileave` | Exit terminal |
+| `ipconfig` | `doxxme` | Windows Ip Configuration |
+| `ping` | `callmeplease` | Ping specific device |
 
 
 
