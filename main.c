@@ -212,7 +212,7 @@ void shell_help() {
            "10. openthis <filename>            ->   Open the File\n"
            "11. readthis <filename>            ->   Read the File's contents\n"
            "12. doxxme                         ->   Windows Ip Configuration\n"
-           "13. callmeplease <ip/dns>          ->   Ping specific ip/dns\n"
+           "13. callmeplease <ip/dns>          ->   Ping device\n"
            "---------------\n"
            );
 }
