@@ -25,7 +25,7 @@
     🔨 This project is still under development(most features in a standard shell is still missing).
 
     
-<h2 align="left">SAFETY WARNING</h2>
+<h2 align="left">💥SAFETY WARNING</h2>
 
 <h3> This shell can:</h3>
 
