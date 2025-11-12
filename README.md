@@ -22,7 +22,23 @@
 
     🔞 No actual psychological harm intended.
 
-    🔨 This project is still under development.
+    🔨 This project is still under development(most features in a standard shell is still missing).
+
+    
+<h2 align="left">💥SAFETY WARNING</h2>
+
+<h3> This shell can:</h3>
+
+    1. Delete files in the current directory(even system32, so do not use admin rights❌).
+
+    2. Create new files and folders.
+
+    3. Run basic Windows commands.
+
+    
+
+
+
 
 
 
