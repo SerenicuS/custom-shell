@@ -24,6 +24,22 @@
 
     🔨 This project is still under development(most features in a standard shell is still missing).
 
+    
+<h2 align="left">SAFETY WARNING</h2>
+
+<h3> This shell can:</h3>
+
+      Delete files in the current directory.
+
+      Create new files and folders.
+
+      Run basic Windows commands.
+
+    
+
+
+
+
 
 
 | Standard Command | My Version | Function |
