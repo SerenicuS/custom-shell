@@ -29,11 +29,11 @@
 
 <h3> This shell can:</h3>
 
-      Delete files in the current directory.
+    1. Delete files in the current directory.
 
-      Create new files and folders.
+    2. Create new files and folders.
 
-      Run basic Windows commands.
+    3. Run basic Windows commands.
 
     
 
