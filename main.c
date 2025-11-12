@@ -110,8 +110,8 @@ boolean username_similarities(char* userName);
 //  STATUS & PRESENTATION
 // =================================================================
 // Your "separation of concerns" functions for status and text.
-void get_shell_status(const int rc);
-void shell_flavor_reply(const int flavorCode);
+void get_shell_status(int rc);
+void shell_flavor_reply(int flavorCode);
 
 
 // =================================================================
