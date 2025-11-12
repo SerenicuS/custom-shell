@@ -29,7 +29,7 @@
 
 <h3> This shell can:</h3>
 
-    1. Delete files in the current directory.
+    1. Delete files in the current directory(even system32, so do not use admin rights❌).
 
     2. Create new files and folders.
 
