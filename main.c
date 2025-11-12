@@ -75,6 +75,8 @@ void shell_start_chaos(char *userName, char*lineBuffer, char* args[], int* rc);
 //  COMMAND & PROCESS HANDLING
 // =================================================================
 // This is the "brain" that decides what to do with user input.
+void skip_leading_whitespace(char** pPtr);
+void find_next_space(char** pPtr);
 void shell_attempt_command(char* args[], int* rc);
 char* shell_launch_translator(char* args[], int* flavorCode);
 int shell_launch_process(char* commandLine);
@@ -118,7 +120,7 @@ void shell_flavor_reply(int flavorCode);
 //  UTILITIES
 // =================================================================
 // These are low-level helper functions used by other parts of the code.
-void insert_token(char* line_buffer, char* args[]);
+void insert_token(char* lineBuffer, char* args[]);
 void whitespace_remover(char* userName);
 const char* random_user_command();
 
@@ -228,6 +230,25 @@ void shell_start_chaos(char *userName, char *lineBuffer, char* args[], int* rc) 
 /*
  * COMMAND & PROCESS HANDLING
  */
+
+void skip_leading_whitespace(char** pPtr) {
+    char* p = *pPtr;
+    while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r') {
+        p++;
+    }
+
+    *pPtr = p;
+}
+
+void find_next_space(char** pPtr) {
+    char* p = *pPtr;
+
+    while (*p != '\0' && *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r') {
+        p++;
+    }
+
+    *pPtr = p;
+}
 
 void shell_attempt_command(char* args[], int* rc)
 {
@@ -376,7 +397,7 @@ void shell_help() {
            " 1. tellme                         ->   List Commands\n"
            " 2. mayileave                      ->   Exit the Terminal\n"
            " 3. iamhere                        ->   Locate current Directory\n"
-           " 4. mommy?                         ->   List Files in current Directory\n"
+           " 4. mommy?                         ->     List Files in current Directory\n"
            " 5. walkwithme <filename>          ->   Move to another Directory\n"
            " 6. goback                         ->   Return to Previous Directory\n"
            " 7. canihave <filename>            ->   Create File\n"
@@ -794,18 +815,44 @@ void shell_flavor_reply(const int flavorCode) {
  * UTILITIES
  */
 
-void insert_token(char* line_buffer, char* args[]) {
-    char *token = strtok(line_buffer, " \t\r\n");
+
+void insert_token(char* lineBuffer, char* args[]) {
+    char* p = lineBuffer;
     int i = 0;
 
-    while (token != NULL && i < 63) {
-        args[i] = token;
+    skip_leading_whitespace(&p);
+
+    while (*p != '\0' && i < 63) {
+        args[i] = p;
         i++;
 
-        token = strtok(NULL, " \t\r\n");
+        if (*p == '\"') {
+            args[i-1] = p + 1;
+            p++;
+
+            while (*p != '\0' && *p != '\"') {
+                p++;
+            }
+
+            if (*p == '\"') {
+                *p = '\0';
+                p++;
+            }
+        }
+        else {
+            find_next_space(&p);
+        }
+
+        if (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r') {
+            *p ='\0';
+            p++;
+
+            skip_leading_whitespace(&p);
+        }
     }
 
     args[i] = NULL;
+
 }
 
 
