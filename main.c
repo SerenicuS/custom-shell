@@ -129,9 +129,9 @@ const char* random_user_command();
 
 int main(void) {
     int keyPressed;
-    shell_flavor_reply(601);
-    shell_flavor_reply(602);
-    shell_flavor_reply(603);
+    shell_flavor_reply(FLAVOR_MENU1);
+    shell_flavor_reply(FLAVOR_MENU2);
+    shell_flavor_reply(FLAVOR_MENU3);
 
     keyPressed = getchar();
 
@@ -147,7 +147,7 @@ int main(void) {
         shell_start(user_register(), FALSE);
     }
 
-    shell_flavor_reply(604);
+    shell_flavor_reply(FLAVOR_EXIT);
 
     return 0;
 
@@ -159,7 +159,7 @@ void shell_start(char *userName, boolean manipulativeShell) {
     char* args[64]; // Args list
     int rc = 0;
 
-    shell_flavor_reply(607);
+    shell_flavor_reply(FLAVOR_START1);
 
     if (manipulativeShell) {
         shell_start_chaos(userName, lineBuffer, args, &rc);
@@ -196,11 +196,11 @@ void shell_start_chaos(char *userName, char *lineBuffer, char* args[], int* rc) 
         if (didntHear == 1) {
 
             if (rand() % 100 < 50) {
-                shell_flavor_reply(608);
+                shell_flavor_reply(FLAVOR_CHAOS_NOT_HEAR);
             }
             else {
                 const char* random_cmd = random_user_command();
-                shell_flavor_reply(609);
+                shell_flavor_reply(FLAVOR_CHAOS_WRONG_COMMAND);
                 Sleep(5);
 
                 char* fake_args[2];
@@ -211,7 +211,7 @@ void shell_start_chaos(char *userName, char *lineBuffer, char* args[], int* rc) 
 
             }
             didntHear = FALSE;
-            shell_flavor_reply(802);
+            shell_flavor_reply(FLAVOR_WHITESPACE2);
             continue;
         }
 
@@ -581,13 +581,13 @@ int read_file(char* args[]) {
 
 char* user_register() {
     static char userName[10]; // Making it static to allow it to stay alive even if the function ends
-    shell_flavor_reply(605);
-    shell_flavor_reply(606);
+    shell_flavor_reply(FLAVOR_REGISTER1);
+    shell_flavor_reply(FLAVOR_REGISTER2);
 
 
     while (1) {
-        shell_flavor_reply(801);
-        shell_flavor_reply(803);
+        shell_flavor_reply(FLAVOR_WHITESPACE);
+        shell_flavor_reply(FLAVOR_USER_REPLY1);
         fgets(userName, 10, stdin);
 
 
@@ -608,7 +608,7 @@ char* user_register() {
         unsigned const int length = strlen(userName);
 
         if (length == 0) {
-            shell_flavor_reply(501);
+            shell_flavor_reply(FLAVOR_USER_ZERO);
         }
 
         else {
@@ -618,10 +618,10 @@ char* user_register() {
             }
 
             if (username_similarities(userName)) {
-                shell_flavor_reply(502);
+                shell_flavor_reply(FLAVOR_USER_SIMILAR);
             }
             else {
-                shell_flavor_reply(503);
+                shell_flavor_reply(FLAVOR_USER_WRONG);
             }
 
 
